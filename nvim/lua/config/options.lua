@@ -25,16 +25,14 @@ opt.clipboard = "unnamedplus"
 opt.backspace = "indent,eol,start"
 
 vim.api.nvim_create_autocmd("FileType", { -- "z= keybind"
-    pattern = "markdown",
-    callback = function()
-        vim.opt_local.spell = true    -- Enable spell checking locally
-        vim.opt_local.spelllang = "en_us" -- Set spell language to US English (adjust as needed)
-    end,
+  pattern = "markdown",
+  callback = function()
+    vim.opt_local.spell = true -- Enable spell checking locally
+    vim.opt_local.spelllang = "en_us" -- Set spell language to US English (adjust as needed)
+  end,
 })
 
 -- theme
 opt.termguicolors = true
 opt.background = "dark"
 opt.signcolumn = "yes"
-
-vim.opt.autowrite = true

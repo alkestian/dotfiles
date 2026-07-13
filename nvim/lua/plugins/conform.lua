@@ -23,6 +23,10 @@ return {
               "80",
             },
           },
+          sql_formatter = {
+            -- add args without replacing the defaults
+            prepend_args = { "-l", "postgresql" }, -- set dialect to postgres
+          },
         },
         formatters_by_ft = {
           zsh = { "beautysh" },
@@ -41,7 +45,7 @@ return {
           yaml = { "prettier" },
           graphql = { "prettier" },
           jsx = { "prettier" },
-          sql = { "sql_formatter" },
+          -- sql = { "sql_formatter" },
           lua = { "stylua" },
           tf = { "terraform_fmt" },
           terraform = { "terraform_fmt" },
