@@ -109,25 +109,6 @@ source $ZSH/oh-my-zsh.sh
 
 export EDITOR='nvim'
 
-# Generic Aliases
-alias ga='git add' 
-alias gcm='git commit -m'
-alias gc='git commit'
-alias gce='git commit -m "empty commit" --allow-empty'
-alias gcep='git pull && git commit -m "empty commit" --allow-empty && git push'
-alias home='cd ~'
-alias ll='ls -la'
-alias rm_docker="docker ps -aq --no-trunc -f status=exited | xargs docker rm"
-alias clean_docker="docker system prune --all --volumes"
-alias dcu='docker-compose up'
-alias dcd='docker-compose down'
-alias docker-prune-all='docker system prune --all --volumes'
-alias rebase='main && git rebase -i origin/main'
-alias cc='conventional_commits.sh'
-alias docker_nuke='docker_nuke.sh'
-alias main='git checkout main && git pull'
-alias zshrc='nvim .zshrc'
-
 export PATH="$HOME/repos/dotfiles/bin:$PATH"
 
 # Scripts
@@ -151,11 +132,15 @@ branch () {
         git checkout -b cb/$1
 }
 
+# Secrets stay local
 if [ -f ~/.zshrc_local ]; then
     source ~/.zshrc_local
 fi
 
+# Source aliases for cross-OS support
+source "$HOME/repos/dotfiles/.aliases"
+
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-eval "$(/Users/cameronblack/.local/bin/mise activate zsh)"
+eval "$($HOME/.local/bin/mise activate zsh)"
