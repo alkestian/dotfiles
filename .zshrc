@@ -107,10 +107,6 @@ source $ZSH/oh-my-zsh.sh
 # For a full list of active aliases, run `alias`.
 #
 
-export EDITOR='nvim'
-
-export PATH="$HOME/repos/dotfiles/bin:$PATH"
-
 # Scripts
 gbdi() {
   if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
