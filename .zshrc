@@ -133,6 +133,10 @@ if [ -f ~/.zshrc_local ]; then
     source ~/.zshrc_local
 fi
 
+if [ -f ~/.exports ]; then
+    source ~/.exports
+fi
+
 # Source aliases for cross-OS support
 source "$HOME/repos/dotfiles/.aliases"
 
