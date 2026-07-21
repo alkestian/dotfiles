@@ -133,12 +133,14 @@ if [ -f ~/.zshrc_local ]; then
     source ~/.zshrc_local
 fi
 
-if [ -f ~/.exports ]; then
-    source ~/.exports
+# Source aliases for cross-OS support
+if [ -f "$HOME/repos/dotfiles/.exports" ]; then
+    source "$HOME/repos/dotfiles/.exports"
 fi
 
-# Source aliases for cross-OS support
-source "$HOME/repos/dotfiles/.aliases"
+if [ -f "$HOME/repos/dotfiles/.aliases" ]; then
+    source "$HOME/repos/dotfiles/.aliases"
+fi
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
