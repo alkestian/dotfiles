@@ -140,3 +140,4 @@ source "$HOME/repos/dotfiles/.aliases"
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 eval "$($HOME/.local/bin/mise activate zsh)"
+
