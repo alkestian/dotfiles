@@ -5,7 +5,7 @@ vim.g.mapleader = " "
 
 -- General
 vim.keymap.set("i", "jk", "<ESC>")
-vim.keymap.set("n", "<leader>s", ":source $HOME/.config/nvim/init.lua<CR>")
+vim.keymap.set("n", "<leader>so", ":source $HOME/.config/nvim/init.lua<CR>")
 vim.keymap.set("n", "<leader>q", ":qa<CR>")
 vim.keymap.set("n", "<leader>w", ":w<CR>")
 
