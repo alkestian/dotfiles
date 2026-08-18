@@ -7,7 +7,6 @@ vim.g.mapleader = " "
 vim.keymap.set("i", "jk", "<ESC>")
 vim.keymap.set("n", "<leader>so", ":source $HOME/.config/nvim/init.lua<CR>", { desc = "Source init.lua" })
 vim.keymap.set("n", "<leader>q", ":qa<CR>")
-vim.keymap.set("n", "<leader>w", ":w<CR>")
 
 -- Code
 vim.keymap.set("n", "<leader>gi", ":lua vim.lsp.buf.implementation()<CR>", { desc = "Go to Implementations" })
@@ -17,10 +16,14 @@ vim.keymap.set("n", "<leader>gu", ":lua vim.lsp.buf.declaration()<CR>", { desc =
 vim.keymap.set("n", "<leader>gb", "<C-o>", { desc = "Go back" })
 
 -- Telescope LSP (The "gt" menu)
-vim.keymap.set("n", "<leader>gtr", function() require("telescope.builtin").lsp_references() end, { desc = "Go to References (Telescope)" })
-vim.keymap.set("n", "<leader>gti", function() require("telescope.builtin").lsp_implementations() end, { desc = "Go to Implementations (Telescope)" })
-vim.keymap.set("n", "<leader>gtd", function() require("telescope.builtin").lsp_definitions() end, { desc = "Go to Definitions (Telescope)" })
-vim.keymap.set("n", "<leader>gtt", function() require("telescope.builtin").lsp_type_definitions() end, { desc = "Go to Type Defs (Telescope)" })
+vim.keymap.set("n", "<leader>gtr", function() require("telescope.builtin").lsp_references() end,
+    { desc = "Go to References (Telescope)" })
+vim.keymap.set("n", "<leader>gti", function() require("telescope.builtin").lsp_implementations() end,
+    { desc = "Go to Implementations (Telescope)" })
+vim.keymap.set("n", "<leader>gtd", function() require("telescope.builtin").lsp_definitions() end,
+    { desc = "Go to Definitions (Telescope)" })
+vim.keymap.set("n", "<leader>gtt", function() require("telescope.builtin").lsp_type_definitions() end,
+    { desc = "Go to Type Defs (Telescope)" })
 
 -- Buffer Navigation
 vim.keymap.set("n", "<leader>tn", ":bnext<cr>", { desc = "Next Buffer" })
@@ -70,5 +73,13 @@ vim.keymap.set("n", "<leader>o", ":NvimTreeOpen<CR>", { desc = "Focus Explorer" 
 
 -- Session
 vim.keymap.set("n", "<leader>ss", function() require("persistence").load() end, { desc = "Restore Session" })
-vim.keymap.set("n", "<leader>sl", function() require("persistence").load({ last = true }) end, { desc = "Restore Last Session" })
+vim.keymap.set("n", "<leader>sl", function() require("persistence").load({ last = true }) end,
+    { desc = "Restore Last Session" })
 vim.keymap.set("n", "<leader>sd", function() require("persistence").stop() end, { desc = "Don't Save Session on Exit" })
+
+-- Move up and down by visual lines instead of physical lines
+vim.keymap.set("n", "j", "gj", { desc = "Move down visual line" })
+vim.keymap.set("n", "k", "gk", { desc = "Move up visual line" })
+
+-- Toggle word wrap
+vim.keymap.set("n", "<leader>w", "<cmd>set wrap!<CR>", { desc = "Toggle word wrap" })
