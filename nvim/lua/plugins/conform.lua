@@ -45,7 +45,7 @@ return {
           yaml = { "prettier" },
           graphql = { "prettier" },
           jsx = { "prettier" },
-          -- sql = { "sql_formatter" },
+          sql = { "sql_formatter" },
           lua = { "stylua" },
           tf = { "terraform_fmt" },
           terraform = { "terraform_fmt" },

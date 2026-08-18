@@ -39,3 +39,5 @@ opt.signcolumn = "yes"
 
 -- tell bash to load aliases for :! commands in nvim
 vim.env.BASH_ENV = vim.fn.expand("~/repos/dotfiles/.bash_env")
+
+opt.autowrite = true

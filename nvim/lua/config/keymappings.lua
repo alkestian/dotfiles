@@ -5,7 +5,7 @@ vim.g.mapleader = " "
 
 -- General
 vim.keymap.set("i", "jk", "<ESC>")
-vim.keymap.set("n", "<leader>so", ":source $HOME/.config/nvim/init.lua<CR>")
+vim.keymap.set("n", "<leader>so", ":source $HOME/.config/nvim/init.lua<CR>", { desc = "Source init.lua" })
 vim.keymap.set("n", "<leader>q", ":qa<CR>")
 vim.keymap.set("n", "<leader>w", ":w<CR>")
 
@@ -15,6 +15,12 @@ vim.keymap.set("n", "<leader>gr", ":lua vim.lsp.buf.references()<CR>", { desc = 
 vim.keymap.set("n", "<leader>gd", ":lua vim.lsp.buf.definition()<CR>", { desc = "Go to Definitions" })
 vim.keymap.set("n", "<leader>gu", ":lua vim.lsp.buf.declaration()<CR>", { desc = "Go to Declarations" })
 vim.keymap.set("n", "<leader>gb", "<C-o>", { desc = "Go back" })
+
+-- Telescope LSP (The "gt" menu)
+vim.keymap.set("n", "<leader>gtr", function() require("telescope.builtin").lsp_references() end, { desc = "Go to References (Telescope)" })
+vim.keymap.set("n", "<leader>gti", function() require("telescope.builtin").lsp_implementations() end, { desc = "Go to Implementations (Telescope)" })
+vim.keymap.set("n", "<leader>gtd", function() require("telescope.builtin").lsp_definitions() end, { desc = "Go to Definitions (Telescope)" })
+vim.keymap.set("n", "<leader>gtt", function() require("telescope.builtin").lsp_type_definitions() end, { desc = "Go to Type Defs (Telescope)" })
 
 -- Buffer Navigation
 vim.keymap.set("n", "<leader>tn", ":bnext<cr>", { desc = "Next Buffer" })
@@ -42,10 +48,10 @@ vim.api.nvim_set_keymap("n", "<leader>dvc", ":DiffviewClose<CR>", { desc = "Clos
 vim.api.nvim_set_keymap("n", "<leader>dvh", ":DiffviewFileHistory<CR>", { desc = "Diffview branch history" })
 vim.api.nvim_set_keymap("n", "<leader>dvf", ":DiffviewFileHistory %<CR>", { desc = "Diffview file history" })
 vim.api.nvim_set_keymap(
-  "n",
-  "<leader>dvm",
-  ":DiffviewOpen origin/main...HEAD<CR>",
-  { desc = "Diffview Main Against Checked Out Feature Branch" }
+    "n",
+    "<leader>dvm",
+    ":DiffviewOpen origin/main...HEAD<CR>",
+    { desc = "Diffview Main Against Checked Out Feature Branch" }
 )
 
 -- Csvview
@@ -56,3 +62,13 @@ vim.keymap.set("n", "<leader>csv", ":CsvViewToggle<CR>", { desc = "Toggle Csvvie
 -- Comment Plugin
 vim.api.nvim_set_keymap("n", "<leader>/", "gcc", { desc = "Toggle Comment" })
 vim.api.nvim_set_keymap("v", "<leader>/", "gc", { desc = "Toggle Comment Region" })
+
+-- File Explorer
+vim.keymap.set("n", "<leader>e", ":NvimTreeToggle<CR>", { desc = "Toggle Explorer" })
+vim.keymap.set("n", "<leader>fe", ":NvimTreeFindFile<CR>", { desc = "Reveal File in Explorer" })
+vim.keymap.set("n", "<leader>o", ":NvimTreeOpen<CR>", { desc = "Focus Explorer" })
+
+-- Session
+vim.keymap.set("n", "<leader>ss", function() require("persistence").load() end, { desc = "Restore Session" })
+vim.keymap.set("n", "<leader>sl", function() require("persistence").load({ last = true }) end, { desc = "Restore Last Session" })
+vim.keymap.set("n", "<leader>sd", function() require("persistence").stop() end, { desc = "Don't Save Session on Exit" })

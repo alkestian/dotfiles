@@ -15,6 +15,9 @@ return {
       },
     },
      config = function()
+      local capabilities = require("cmp_nvim_lsp").default_capabilities()
+      vim.lsp.config('*', { capabilities = capabilities })
+
       vim.lsp.config('lua_ls', {})
       vim.lsp.enable('lua_ls')
 
@@ -70,17 +73,6 @@ return {
       --   end,
       -- })
       -- vim.lsp.enable('sqlls')
-
-      require("cmp_nvim_lsp").default_capabilities()
-
-      vim.api.nvim_create_autocmd("LspAttach", {
-        callback = function(args)
-          local client = vim.lsp.get_client_by_id(args.data.client_id)
-          if not client then
-            return
-          end
-        end,
-      })
-    end,  
+    end,
   },
 }

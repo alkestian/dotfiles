@@ -29,6 +29,7 @@ return {
 
       vim.keymap.set("n", "<leader>ff", require("telescope.builtin").find_files, { desc = "Telescope find files" })
       vim.keymap.set("n", "<leader>fg", require("telescope.builtin").live_grep, { desc = "Telescope live grep" })
+      vim.keymap.set("n", "<leader>fr", require("telescope.builtin").resume, { desc = "Telescope resume find" })
       vim.keymap.set("n", "<leader>fb", require("telescope.builtin").buffers, { desc = "Telescope buffers" })
       vim.keymap.set("n", "<leader>fc", require("telescope.builtin").git_commits, { desc = "Git commits" })
       vim.keymap.set(
