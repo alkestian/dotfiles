@@ -1,0 +1,5 @@
+if [ -n "$NVIM" ] || [ -n "$VIM" ]; then
+    shopt -s expand_aliases
+    
+    source ~/repos/dotfiles/.aliases
+fi
