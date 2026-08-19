@@ -2,8 +2,10 @@
 alias ga='git add' 
 alias gcm='git commit -m'
 alias gc='git commit'
+alias gca='git commit --amend'
 alias gce='git commit -m "empty commit" --allow-empty'
 alias gcep='git pull && git commit -m "empty commit" --allow-empty && git push'
+alias gcne='git commit --amend --no-edit'
 alias home='cd ~'
 alias ll='ls -la'
 alias rm_docker="docker ps -aq --no-trunc -f status=exited | xargs docker rm"
