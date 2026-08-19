@@ -82,4 +82,5 @@ vim.keymap.set("n", "j", "gj", { desc = "Move down visual line" })
 vim.keymap.set("n", "k", "gk", { desc = "Move up visual line" })
 
 -- Toggle word wrap
-vim.keymap.set("n", "<leader>w", "<cmd>set wrap!<CR>", { desc = "Toggle word wrap" })
+vim.keymap.set("n", "<leader>ww", "<cmd>set wrap!<CR>", { desc = "Toggle word wrap" })
+vim.keymap.set("n", "<leader>wl", "<cmd>set linebreak!<CR>", { desc = "Toggle linebreak at end of word" })
