@@ -7,6 +7,11 @@ return {
           enable = true,
           update_root = false,
         },
+        view = {
+          adaptive_size = true,
+          min_width = 30,
+          max_width = 90,
+        },
       })
     end
   }
