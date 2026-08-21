@@ -26,10 +26,12 @@ vim.keymap.set("n", "<leader>gtt", function() require("telescope.builtin").lsp_t
     { desc = "Go to Type Defs (Telescope)" })
 
 -- Buffer Navigation
-vim.keymap.set("n", "<leader>tn", ":bnext<cr>", { desc = "Next Buffer" })
-vim.keymap.set("n", "<leader>tp", ":bprevious<cr>", { desc = "Previous Buffer" })
+vim.keymap.set("n", "<leader>tn", ":BufferLineCycleNext<cr>", { desc = "Next Buffer" })
+vim.keymap.set("n", "<leader>tp", ":BufferLineCyclePrev<cr>", { desc = "Previous Buffer" })
 vim.keymap.set("n", "<leader>tc", ":bd<cr>", { desc = "Close Buffer" })
-vim.keymap.set("n", "<leader>tb", ":buffer #<cr>", { desc = "Last Buffer" })
+vim.keymap.set("n", "<leader>tb", ":buffer #<cr>", { desc = "Last Used Buffer" })
+vim.keymap.set("n", "<leader>tf", ":BufferLineGoToBuffer 1<cr>", { desc = "First Buffer in List" })
+vim.keymap.set("n", "<leader>tl", ":BufferLineGoToBuffer -1<cr>", { desc = "Last Buffer in List" })
 
 -- Split Navigation
 vim.keymap.set("n", "<leader>spv", ":vsplit<CR>", { desc = "Vertical Split" })
@@ -38,6 +40,28 @@ vim.keymap.set("n", "<leader>spc", "<C-w>c", { desc = "Close Split" })
 vim.keymap.set("n", "<leader>spo", "<C-w>o", { desc = "Close OtherSplits" })
 vim.keymap.set("n", "<leader>sp=", ":vertical resize +20<CR>", { desc = "Increase Size of Split" })
 vim.keymap.set("n", "<leader>sp-", ":vertical resize -20<CR>", { desc = "Increase Size of Split" })
+
+-- Split, keeping current file in the new window and showing the alternate
+-- file in the original window instead of a duplicate.
+local function split_with_alternate(split_cmd)
+    return function()
+        local origin = vim.api.nvim_get_current_win()
+        vim.cmd(split_cmd)
+        local created = vim.api.nvim_get_current_win()
+
+        local alt = vim.fn.bufnr("#")
+        if alt == -1 or vim.fn.buflisted(alt) == 0 then
+            vim.notify("No alternate buffer to show in the original split", vim.log.levels.WARN)
+            return
+        end
+
+        vim.api.nvim_win_set_buf(origin, alt)
+        vim.api.nvim_set_current_win(created)
+    end
+end
+
+vim.keymap.set("n", "<leader>spV", split_with_alternate("vsplit"), { desc = "Vertical Split (Alternate File)" })
+vim.keymap.set("n", "<leader>spH", split_with_alternate("split"), { desc = "Horizontal Split (Alternate File)" })
 
 -- Nvim-Tmux
 vim.keymap.set("n", "<C-h>", ":NvimTmuxNavigateLeft<CR>", { desc = "Navigate to the Left Pane" })
