@@ -41,3 +41,10 @@ opt.signcolumn = "yes"
 vim.env.BASH_ENV = vim.fn.expand("~/repos/dotfiles/.bash_env")
 
 opt.autowrite = true
+
+-- reload files edited outside nvim, skipped while the buffer has unsaved changes
+opt.autoread = true
+
+vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold" }, {
+    command = "checktime",
+})
