@@ -8,9 +8,11 @@ return {
           update_root = false,
         },
         view = {
-          adaptive_size = true,
-          min_width = 30,
-          max_width = 90,
+          width = {
+            min = 30,
+            max = 90,
+            padding = 1,
+          },
         },
       })
     end
