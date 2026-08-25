@@ -1,0 +1,17 @@
+onboarding = false
+[ui]
+show_agent_labels_on_pane_borders = true
+
+[ui.sidebar.agents]
+rows = [
+    ["state_icon", { token = "$harness_logo", bold = true }, "agent"],
+    ["workspace", "tab"],
+]
+
+[keys]
+prefix = "§"
+workspace_picker = "prefix+w"
+
+[theme]
+name = "tokyo-night"
+auto_switch = false
