@@ -3,3 +3,4 @@ if [ -n "$NVIM" ] || [ -n "$VIM" ]; then
 
     source ~/repos/dotfiles/.aliases
 fi
+. "$HOME/.cargo/env"
