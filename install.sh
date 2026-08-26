@@ -13,6 +13,8 @@ PAIRS="
 .bash_env:$HOME/.bash_env
 nvim:$HOME/.config/nvim
 herdr/config.toml:$HOME/.config/herdr/config.toml
+claude/skills/conventional-commit:$HOME/.claude/skills/conventional-commit
+claude/skills/pr-creator:$HOME/.claude/skills/pr-creator
 "
 
 link_one() {
