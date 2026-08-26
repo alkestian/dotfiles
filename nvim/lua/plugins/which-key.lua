@@ -15,6 +15,13 @@ return {
         end,
         desc = "Buffer Local Keymaps (which-key)",
       },
+      {
+        "<leader>K",
+        function()
+          require("which-key").show({ global = true })
+        end,
+        desc = "All Keymaps (which-key)",
+      },
     },
   },
 }
