@@ -17,10 +17,48 @@ get_ticket_from_branch () {
     fi
 }
 
+# Function to capitalise the first character of a string (bash 3.2 compatible)
+capitalise () {
+    local str="$1"
+    [[ -z $str ]] && return
+    printf '%s%s' "$(printf '%s' "${str:0:1}" | tr '[:lower:]' '[:upper:]')" "${str:1}"
+}
+
 # Function to prompt the user to select a commit type
 select_commit_type () {
     local commit_types=("feat" "fix" "chore" "docs" "style" "refactor" "test" "perf" "build")
     printf "%s\n" "${commit_types[@]}" | fzf --prompt="Select a commit type: "
+}
+
+# Function to resolve the scope. Prints "(TICKET)" or "" when there is no scope.
+# The ticket is the scope: follow-up commits on a branch take none, so pass '-' to omit it.
+resolve_scope () {
+    local default_ticket ticket choice
+    default_ticket=$(get_ticket_from_branch)
+
+    if [[ $default_ticket == "NOTICK" ]]; then
+        # Nothing to derive from the branch, so a blank answer is a real question
+        echo "Enter scope / ticket ID, '-' for none: " >&2
+        read ticket
+        if [[ -z $ticket ]]; then
+            choice=$(printf "%s\n" "NOTICK" "no scope" | fzf --prompt="No ticket in branch name. Scope: ")
+            if [[ $choice == "NOTICK" ]]; then
+                ticket="NOTICK"
+            else
+                ticket="-"
+            fi
+        fi
+    else
+        echo "Enter scope / ticket ID [${default_ticket}], '-' for none: " >&2
+        read ticket
+        ticket=${ticket:-$default_ticket}
+    fi
+
+    if [[ $ticket == "-" || $ticket == "none" ]]; then
+        echo ""
+    else
+        echo "(${ticket})"
+    fi
 }
 
 # Parse arguments
@@ -59,14 +97,10 @@ fi
 
 # Handle empty commit flag
 if [[ $empty_flag == true ]]; then
-    # Get ticket number
-    default_ticket=$(get_ticket_from_branch)
-    echo "Enter ticket ID [${default_ticket}]: "
-    read ticket
-    ticket=${ticket:-$default_ticket}
+    commit_scope=$(resolve_scope)
 
     # Format the empty commit message
-    formatted_message="chore: [${ticket}] empty commit to trigger CI"
+    formatted_message="chore${commit_scope}: Empty commit to trigger CI"
 
     # Save the commit message to the cache
     echo "$formatted_message" > "$cache_file"
@@ -83,19 +117,12 @@ if [[ -z $commit_type ]]; then
     exit 1
 fi
 
-echo "Enter commit scope [none]: "
-read commit_scope
-[[ -n $commit_scope ]] && commit_scope="(${commit_scope})"
-
-default_ticket=$(get_ticket_from_branch)
-echo "Enter ticket ID [${default_ticket}]: "
-read ticket
-ticket=${ticket:-$default_ticket}
+commit_scope=$(resolve_scope)
 
 echo "Enter commit message: "
 read commit_message
 
-formatted_message="${commit_type}${commit_scope}: [${ticket}] ${commit_message}"
+formatted_message="${commit_type}${commit_scope}: $(capitalise "$commit_message")"
 
 echo "$formatted_message" > "$cache_file"
 
