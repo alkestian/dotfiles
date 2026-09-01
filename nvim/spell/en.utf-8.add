@@ -8,3 +8,7 @@ CreatedAt
 LatestAdvance
 TransferAmount
 DestinationAccountUUID
+behaviour
+clawback
+backfill
+un
