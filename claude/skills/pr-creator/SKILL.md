@@ -50,7 +50,9 @@ description: Creates a pull request titled from the branch's first commit, with 
    - **Drop any "Away Team" checklist block at the top**, and the `---` rule that separates it. That
      block is for external contributors, and it is the one part of the template you always remove.
    - Replace the JIRA placeholder with the branch's ticket.
-   - `Why` 1-3 sentences. `What` short bullets, no restating the diff. Leave `How to Test` as written.
+   - Shortest body that works. Default one sentence for `Why` and one for `What` — expand to 1-3
+     sentences or bullets only when the change is genuinely complex enough to need it. Leave
+     `How to Test` as written.
    - No caveats, TODOs, or reviewer advice the user did not ask for. Raise those in chat instead.
    - Read `references/description.md` before writing — it owns trimming and length rules.
 

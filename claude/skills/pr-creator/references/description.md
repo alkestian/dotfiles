@@ -8,6 +8,41 @@ substitute a different structure, never add or drop a heading because a section 
 - Drop any "Away Team" switch block at the top. That is for external contributors.
 - Replace the JIRA link placeholder (`XXX`, `TICKET-ID`, etc.) with the branch's ticket.
 
+## Scale the body to the diff — shortest that works
+
+**Write the shortest body that does the job, and expand only when the change genuinely earns it.**
+The sections below (1-3 sentences, bullets, domain groupings) are the escalation for complex changes,
+not the starting point.
+
+**Default assumption: the change is small.** A diff under ~20 changed lines, or one that changes a
+single behaviour, gets **one sentence per section**. Not "one or two sentences" — one. Write it, then
+cut every clause that isn't load-bearing.
+
+- `Why` — one sentence: the failure or need, and why it matters. Nothing else.
+- `What Changed` — one sentence: the mechanism, and the effect. No bullets, no file names, no
+  before/after table.
+
+Worked example, a two-line log-level change:
+
+```markdown
+## Why
+
+V3 earnings enqueue can fail with `context canceled`, but no action is needed from the Ledger team so
+it shouldn't raise an error.
+
+## What Changed
+
+Use `LogWarnOrError` to prevent context cancelled from causing alerts.
+```
+
+What that example deliberately omits, and you must omit too: what the caller does next, what the
+retry semantics are, which other error classes still log at error level, which paths were touched,
+what the change does *not* cover. Every one of those is recoverable from the diff. A reviewer of a
+small PR wants to start reading code in the first five seconds.
+
+If you catch yourself writing "so that", "which means", "note that", or a second clause after a dash —
+stop and delete from there to the end of the sentence.
+
 ## Length
 
 - `What` — a short summary, not an inventory. The diff is already in the PR; a reviewer opening it

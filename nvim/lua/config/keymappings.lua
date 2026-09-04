@@ -38,8 +38,11 @@ vim.keymap.set("n", "<leader>spv", ":vsplit<CR>", { desc = "Vertical Split" })
 vim.keymap.set("n", "<leader>sph", ":split<CR>", { desc = "Horizontal Split" })
 vim.keymap.set("n", "<leader>spc", "<C-w>c", { desc = "Close Split" })
 vim.keymap.set("n", "<leader>spo", "<C-w>o", { desc = "Close OtherSplits" })
-vim.keymap.set("n", "<leader>sp=", ":vertical resize +20<CR>", { desc = "Increase Size of Split" })
-vim.keymap.set("n", "<leader>sp-", ":vertical resize -20<CR>", { desc = "Increase Size of Split" })
+vim.keymap.set("n", "<leader>sp=", ":vertical resize +20<CR>", { desc = "Widen Split" })
+vim.keymap.set("n", "<leader>sp-", ":vertical resize -20<CR>", { desc = "Narrow Split" })
+vim.keymap.set("n", "<leader>sp+", ":resize +10<CR>", { desc = "Heighten Split" })
+vim.keymap.set("n", "<leader>sp_", ":resize -10<CR>", { desc = "Shorten Split" })
+vim.keymap.set("n", "<leader>sp0", "<C-w>=", { desc = "Equalize Splits" })
 
 -- Split, keeping current file in the new window and showing the alternate
 -- file in the original window instead of a duplicate.
