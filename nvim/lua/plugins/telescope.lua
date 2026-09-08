@@ -10,13 +10,17 @@ return {
       require("telescope").setup({
         pickers = {
           live_grep = {
-            file_ignore_patterns = { "node_modules", ".git", ".venv" },
+            -- Lua patterns, not literals: escape the dot and require a trailing
+            -- slash so ".git" doesn't also swallow ".github".
+            file_ignore_patterns = { "node_modules/", "%.git/", "%.venv/" },
             additional_args = function(_)
               return { "--hidden" }
             end,
           },
           find_files = {
-            file_ignore_patterns = { "node_modules", ".git", ".venv" },
+            -- Lua patterns, not literals: escape the dot and require a trailing
+            -- slash so ".git" doesn't also swallow ".github".
+            file_ignore_patterns = { "node_modules/", "%.git/", "%.venv/" },
             hidden = true,
           },
         },
