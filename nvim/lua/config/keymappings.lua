@@ -28,10 +28,24 @@ vim.keymap.set("n", "<leader>gtt", function() require("telescope.builtin").lsp_t
 -- Buffer Navigation
 vim.keymap.set("n", "<leader>tn", ":BufferLineCycleNext<cr>", { desc = "Next Buffer" })
 vim.keymap.set("n", "<leader>tp", ":BufferLineCyclePrev<cr>", { desc = "Previous Buffer" })
-vim.keymap.set("n", "<leader>tc", ":bd<cr>", { desc = "Close Buffer" })
+vim.keymap.set("n", "<leader>tcc", ":bd<cr>", { desc = "Close Current Buffer" })
 vim.keymap.set("n", "<leader>tb", ":buffer #<cr>", { desc = "Last Used Buffer" })
 vim.keymap.set("n", "<leader>tf", ":BufferLineGoToBuffer 1<cr>", { desc = "First Buffer in List" })
 vim.keymap.set("n", "<leader>tl", ":BufferLineGoToBuffer -1<cr>", { desc = "Last Buffer in List" })
+vim.keymap.set("n", "<leader>tca", ":BufferLineCloseAll<cr>", { desc = "Close All Buffers" })
+
+for i = 1, 9 do
+    vim.keymap.set("n", "<leader>t" .. i, ":BufferLineGoToBuffer " .. i .. "<cr>",
+        { desc = "Go to Buffer " .. i })
+    vim.keymap.set("n", "<leader>tc" .. i, function()
+        local listed = vim.tbl_filter(function(b) return vim.bo[b].buflisted end, vim.api.nvim_list_bufs())
+        table.sort(listed)
+        local target = listed[i]
+        if target then
+            vim.api.nvim_buf_delete(target, {})
+        end
+    end, { desc = "Close Buffer " .. i })
+end
 
 -- Split Navigation
 vim.keymap.set("n", "<leader>spv", ":vsplit<CR>", { desc = "Vertical Split" })
