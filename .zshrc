@@ -133,6 +133,10 @@ if [ -f ~/.zshrc_local ]; then
     source ~/.zshrc_local
 fi
 
+if [ -d "$HOME/repos/dotfiles/bin" ]; then
+    export PATH="$HOME/repos/dotfiles/bin:$PATH"
+fi
+
 # Source aliases for cross-OS support
 if [ -f "$HOME/repos/dotfiles/.exports" ]; then
     source "$HOME/repos/dotfiles/.exports"
@@ -145,5 +149,7 @@ fi
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-eval "$($HOME/.local/bin/mise activate zsh)"
+if [ -x "$HOME/.local/bin/mise" ]; then
+    eval "$($HOME/.local/bin/mise activate zsh)"
+fi
 
