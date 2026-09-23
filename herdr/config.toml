@@ -11,6 +11,18 @@ rows = [
 [keys]
 prefix = "§"
 workspace_picker = "prefix+w"
+previous_workspace = "prefix+["
+next_workspace = "prefix+]"
+
+[[keys.command]]
+key = "prefix+u"
+type = "pane"
+command = "herdr_worktree_flow.sh"
+
+[[keys.command]]
+key = "prefix+shift+u"
+type = "pane"
+command = "herdr_worktree_close.sh"
 
 [theme]
 name = "tokyo-night"
