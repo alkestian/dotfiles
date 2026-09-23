@@ -32,7 +32,7 @@ vim.keymap.set("n", "<leader>tcc", ":bd<cr>", { desc = "Close Current Buffer" })
 vim.keymap.set("n", "<leader>tb", ":buffer #<cr>", { desc = "Last Used Buffer" })
 vim.keymap.set("n", "<leader>tf", ":BufferLineGoToBuffer 1<cr>", { desc = "First Buffer in List" })
 vim.keymap.set("n", "<leader>tl", ":BufferLineGoToBuffer -1<cr>", { desc = "Last Buffer in List" })
-vim.keymap.set("n", "<leader>tca", ":BufferLineCloseAll<cr>", { desc = "Close All Buffers" })
+vim.keymap.set("n", "<leader>tca", ":%bd<cr>", { desc = "Close All Buffers" })
 
 for i = 1, 9 do
     vim.keymap.set("n", "<leader>t" .. i, ":BufferLineGoToBuffer " .. i .. "<cr>",

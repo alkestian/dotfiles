@@ -6,6 +6,14 @@ return {
       -- your configuration comes here
       -- or leave it empty to use the default settings
       -- refer to the configuration section below
+      spec = (function()
+        local spec = {}
+        for i = 1, 9 do
+          table.insert(spec, { "<leader>t" .. i, desc = i == 1 and "1..9: Go to Buffer N" or nil, hidden = i ~= 1 })
+          table.insert(spec, { "<leader>tc" .. i, desc = i == 1 and "1..9: Close Buffer N" or nil, hidden = i ~= 1 })
+        end
+        return spec
+      end)(),
     },
     keys = {
       {
