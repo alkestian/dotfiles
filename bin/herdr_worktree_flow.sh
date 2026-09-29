@@ -70,6 +70,8 @@ created=$(herdr worktree create "${args[@]}") || die "worktree create failed: $(
 ws_id=$(jq -r '.result.workspace.workspace_id' <<<"$created")
 wt_path=$(jq -r '.result.worktree.path' <<<"$created")
 
+command -v mise >/dev/null 2>&1 && mise trust "$wt_path" --yes --quiet 2>/dev/null
+
 pane_for_tab() {
     herdr pane list --workspace "$ws_id" | jq -r --arg t "$1" '.result.panes[] | select(.tab_id==$t) | .pane_id'
 }

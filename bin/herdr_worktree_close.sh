@@ -9,11 +9,19 @@ if [[ -z "$ws_id" ]]; then
 fi
 
 info=$(herdr worktree list --workspace "$ws_id")
-branch=$(jq -r --arg ws "$ws_id" '.result.worktrees[] | select(.open_workspace_id==$ws) | .branch' <<<"$info")
+entry=$(jq -r --arg ws "$ws_id" '.result.worktrees[] | select(.open_workspace_id==$ws)' <<<"$info")
+is_linked=$(jq -r '.is_linked_worktree // false' <<<"$entry")
+branch=$(jq -r '.branch // empty' <<<"$entry")
 repo_root=$(jq -r '.result.source.repo_root' <<<"$info")
 
-if ! herdr worktree remove --workspace "$ws_id"; then
-    echo "failed to remove worktree (uncommitted or unmerged changes?)."
+if [[ "$is_linked" != "true" ]]; then
+    echo "this workspace is not a linked worktree (probably the main repo checkout) - nothing to close."
+    read -r -p "press enter to close" _
+    exit 1
+fi
+
+if ! remove_result=$(herdr worktree remove --workspace "$ws_id" 2>&1); then
+    echo "failed to remove worktree: $(jq -r '.error.message // .' <<<"$remove_result")"
     read -r -p "press enter to close" _
     exit 1
 fi
