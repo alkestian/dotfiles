@@ -55,11 +55,16 @@ description: Creates a pull request titled from the branch's first commit, with 
      `How to Test` as written.
    - No caveats, TODOs, or reviewer advice the user did not ask for. Raise those in chat instead.
    - Read `references/description.md` before writing — it owns trimming and length rules.
+   - End the body with a blank line then `🤖 Generated with [Claude Code](https://claude.com/claude-code)`.
 
-5. **Preview and confirm.** Show title and body, plus `<base>` whenever it is not the default branch.
+5. **Ask about agent co-authorship.** AskUserQuestion: add a `Co-Authored-By:` line for the agent to the
+   body, or skip it (recommended default: skip). If added, place it directly below the
+   `Generated with` line.
+
+6. **Preview and confirm.** Show title and body, plus `<base>` whenever it is not the default branch.
    Then AskUserQuestion: create as shown (recommended) / edit title / edit description / cancel.
 
-6. **Create it.**
+7. **Create it.**
 
    ```bash
    git push -u origin HEAD
@@ -74,7 +79,8 @@ description: Creates a pull request titled from the branch's first commit, with 
 ## Rules
 
 - Never hardcode `main` — resolve the base in step 1.
-- No co-author, `Generated with`, or attribution lines in the title or body.
+- Never attribution lines in the title. Body always gets the `Generated with` line (step 4); a
+  `Co-Authored-By` line is added only if the user opts in at step 5.
 - Diff only `<base>...HEAD`. Diffing the default branch on a stacked branch pulls the parent PR's work
   into this description.
 - This skill only creates PRs. It never comments on or replies to an existing one.
