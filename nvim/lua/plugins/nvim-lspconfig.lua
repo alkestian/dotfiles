@@ -57,13 +57,13 @@ return {
       vim.lsp.enable('tailwindcss')
       vim.lsp.config('rust_analyzer', {})
       vim.lsp.enable('rust_analyzer')
-      vim.lsp.config('buf_ls', {
-        cmd = { "buf", "lsp", "serve" },
+      vim.lsp.config('protols', {
+        cmd = { "protols" },
         filetypes = { "proto" },
-        root_dir = require("lspconfig.util").root_pattern("buf.yaml", "buf.work.yaml", ".git"),
+        root_markers = { "buf.yaml", "buf.work.yaml", ".git" },
         single_file_support = true,
       })
-      vim.lsp.enable('buf_ls')
+      vim.lsp.enable('protols')
 
       -- vim.lsp.config('sqlls', {
       --   cmd = { "sql-language-server", "up", "--method", "stdio" },

@@ -1,5 +1,7 @@
 local opt = vim.opt
 
+vim.filetype.add({ extension = { proto = "proto" } })
+
 -- line
 opt.number = true
 opt.wrap = false
