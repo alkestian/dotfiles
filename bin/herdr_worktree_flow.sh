@@ -64,7 +64,18 @@ if [[ -n "$existing_path" ]]; then
 fi
 
 args=(--branch "$branch" --cwd "$repo_root" --label "$branch" --focus)
-[[ -n "$base" ]] && args+=(--base "$base")
+
+# Pulling the base down to date before cutting the new branch: skip this when
+# reusing an existing branch above (nothing new is being cut from a base there).
+if [[ "$branch" != "$reuse" ]]; then
+    base_name="${base:-$default_branch}"
+    if git -C "$repo_root" fetch origin "$base_name" 2>/dev/null; then
+        args+=(--base "origin/$base_name")
+    else
+        echo "could not fetch origin/$base_name, branching off local $base_name instead"
+        args+=(--base "$base_name")
+    fi
+fi
 
 created=$(herdr worktree create "${args[@]}") || die "worktree create failed: $(jq -r '.error.message // .' <<<"$created")"
 ws_id=$(jq -r '.result.workspace.workspace_id' <<<"$created")
