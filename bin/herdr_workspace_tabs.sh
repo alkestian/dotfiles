@@ -27,6 +27,24 @@ if [[ "$(jq -r '.result.tabs | length' <<<"$tabs")" -gt 1 ]]; then
     [[ "$ans" =~ ^[Yy]$ ]] || exit 0
 fi
 
+# herdr agent names: lowercase letter first, then [a-z0-9_-], max 32 chars.
+agent_name() {
+    local n
+    n=$(tr "[:upper:]" "[:lower:]" <<<"$1" | sed -E "s/[^a-z0-9_-]+/-/g; s/^[^a-z]+//")
+    n="${n:0:32}"
+    echo "${n:-agent}"
+}
+
+# Start an agent named after the branch; herdr names are global, so fall back
+# to "<repo>-<branch>" when another repo's worktree already holds that name.
+# Usage: start_agent <name> <repo> <kind> <pane> [agent-args...]
+start_agent() {
+    local name=$1 repo=$2 kind=$3 pane=$4
+    shift 4
+    herdr agent start "$(agent_name "$name")" --kind "$kind" --pane "$pane" ${1:+-- "$@"} >/dev/null 2>&1 </dev/null \
+        || herdr agent start "$(agent_name "$repo-$name")" --kind "$kind" --pane "$pane" ${1:+-- "$@"} </dev/null
+}
+
 pane_for_tab() {
     herdr pane list --workspace "$ws_id" | jq -r --arg t "$1" '.result.panes[] | select(.tab_id==$t) | .pane_id'
 }
@@ -40,7 +58,7 @@ name=$(git -C "$cwd" branch --show-current 2>/dev/null)
 name="${name:-$(basename "$cwd")}"
 
 agent_tab=$(herdr tab create --workspace "$ws_id" --cwd "$cwd" --label agent --focus | jq -r '.result.tab.tab_id')
-herdr agent start "$name" --kind "$agent_kind" --pane "$(pane_for_tab "$agent_tab")"
+start_agent "$name" "$(basename "$(git -C "$cwd" rev-parse --path-format=absolute --git-common-dir 2>/dev/null | xargs dirname)")" "$agent_kind" "$(pane_for_tab "$agent_tab")"
 
 herdr tab create --workspace "$ws_id" --cwd "$cwd" --label terminal --no-focus >/dev/null
 
