@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
-# Reload zsh in every herdr pane that is sitting at an idle shell prompt.
-# Panes running something else (nvim, agents, servers) are skipped and listed.
+# Reload the herdr config, then reload zsh in every herdr pane that is sitting
+# at an idle shell prompt. Panes running something else (nvim, agents, servers)
+# are skipped and listed.
 # Usage: herdr_reload_shells.sh
 set -uo pipefail
+
+herdr server reload-config >/dev/null && echo "reloaded herdr config"
 
 reloaded=0
 skipped=()
