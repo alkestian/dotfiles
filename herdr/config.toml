@@ -20,6 +20,11 @@ type = "pane"
 command = "herdr_worktree_flow.sh"
 
 [[keys.command]]
+key = "prefix+i"
+type = "pane"
+command = "herdr_workspace_tabs.sh"
+
+[[keys.command]]
 key = "prefix+shift+u"
 type = "pane"
 command = "herdr_worktree_close.sh"
