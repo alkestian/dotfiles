@@ -34,9 +34,29 @@ nvim_panes() {
     done
 }
 
+# RPC socket of the nvim in a pane. The foreground pid is the TUI; the socket is
+# named after its `--embed` child, so check both.
+nvim_socket() {
+    local tui pid sock
+    tui=$(herdr pane process-info --pane "$1" |
+        jq -r '.result.process_info.foreground_processes[] | select(.name=="nvim") | .pid' | head -1)
+    for pid in $tui $(pgrep -P "$tui"); do
+        for sock in "${TMPDIR%/}/nvim.$USER"/*/"nvim.$pid.0"; do
+            [[ -S "$sock" ]] && { echo "$sock"; return; }
+        done
+    done
+}
+
+# Quit over RPC rather than typing into the pane: keystrokes sent as separate
+# esc/":qa" writes can land as text in insert mode. <C-\><C-N> reaches normal
+# mode from any mode, and :qa still refuses to drop unsaved changes.
 for pane in $(nvim_panes); do
-    herdr pane send-keys "$pane" esc >/dev/null
-    herdr pane run "$pane" ":qa" >/dev/null
+    sock=$(nvim_socket "$pane")
+    if [[ -z "$sock" ]]; then
+        echo "no nvim socket for $pane, skipping"
+        continue
+    fi
+    nvim --server "$sock" --remote-send '<C-\><C-N>:qa<CR>' 2>/dev/null
 done
 sleep 2
 
