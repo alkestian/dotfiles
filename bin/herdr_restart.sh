@@ -14,6 +14,11 @@ fi
 
 state_dir="$HOME/.config/herdr"
 
+# `herdr status server` exits 0 either way, so read the status line instead.
+server_running() {
+    herdr status server 2>/dev/null | grep -q '^status: running'
+}
+
 launch_and_restore() {
     # The herdr client below owns the terminal, so restore panes from a background
     # job once the new server is answering and its shells have had time to start.
@@ -27,7 +32,7 @@ launch_and_restore() {
 }
 
 # Server already down (crash, manual stop): nothing to quit, just relaunch.
-if ! herdr status server >/dev/null 2>&1; then
+if ! server_running; then
     echo "herdr server not running, starting it and restoring panes"
     launch_and_restore
 fi
@@ -83,6 +88,10 @@ if [[ -n "$left" ]]; then
 fi
 
 herdr server stop >/dev/null
-while herdr status server >/dev/null 2>&1; do sleep 0.5; done
+for _ in $(seq 60); do
+    server_running || break
+    sleep 0.5
+done
+server_running && { echo "server still running after 30s, giving up"; exit 1; }
 
 launch_and_restore
