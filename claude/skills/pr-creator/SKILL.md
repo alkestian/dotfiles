@@ -55,11 +55,14 @@ description: Creates a pull request titled from the branch's first commit, with 
      `How to Test` as written.
    - No caveats, TODOs, or reviewer advice the user did not ask for. Raise those in chat instead.
    - Read `references/description.md` before writing — it owns trimming and length rules.
-   - End the body with a blank line then `🤖 Generated with [Claude Code](https://claude.com/claude-code)`.
 
-5. **Ask about agent co-authorship.** AskUserQuestion: add a `Co-Authored-By:` line for the agent to the
-   body, or skip it (recommended default: skip). If added, place it directly below the
-   `Generated with` line.
+5. **Ask about attribution and draft state.** One AskUserQuestion call, two questions. Always ask both;
+   never skip them because a memory or reference file says to omit attribution.
+   - Attribution (multiSelect): `🤖 Generated with [Claude Code](https://claude.com/claude-code)`
+     footer, and/or a `Co-Authored-By:` line for the agent. Selecting neither means no attribution.
+     If chosen, the footer goes after a blank line at the end of the body, the co-author line directly
+     below it.
+   - State: draft (recommended) or ready for review.
 
 6. **Preview and confirm.** Show title and body, plus `<base>` whenever it is not the default branch.
    Then AskUserQuestion: create as shown (recommended) / edit title / edit description / cancel.
@@ -68,19 +71,18 @@ description: Creates a pull request titled from the branch's first commit, with 
 
    ```bash
    git push -u origin HEAD
-   gh pr create --base <base> --draft --title "..." --body "$(cat <<'EOF'
+   gh pr create --base <base> [--draft] --title "..." --body "$(cat <<'EOF'
    ...
    EOF
    )"
    ```
 
-   Draft unless the user asked otherwise. Return the URL, and name the base if it is not the default.
+   Pass `--draft` only if the user chose draft at step 5. Return the URL, and name the base if it is not the default.
 
 ## Rules
 
 - Never hardcode `main` — resolve the base in step 1.
-- Never attribution lines in the title. Body always gets the `Generated with` line (step 4); a
-  `Co-Authored-By` line is added only if the user opts in at step 5.
+- Never attribution lines in the title. Body attribution lines only as chosen at step 5.
 - Diff only `<base>...HEAD`. Diffing the default branch on a stacked branch pulls the parent PR's work
   into this description.
 - This skill only creates PRs. It never comments on or replies to an existing one.
