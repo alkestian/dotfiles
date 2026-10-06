@@ -15,8 +15,12 @@ fi
 state_dir="$HOME/.config/herdr"
 
 # `herdr status server` exits 0 either way, so read the status line instead.
+# Capture first: `grep -q` closing the pipe early panics herdr, which pipefail
+# then reports as "not running".
 server_running() {
-    herdr status server 2>/dev/null | grep -q '^status: running'
+    local out
+    out=$(herdr status server 2>/dev/null)
+    [[ "$out" == *"status: running"* ]]
 }
 
 launch_and_restore() {
