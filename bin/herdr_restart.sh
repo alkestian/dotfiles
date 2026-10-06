@@ -2,6 +2,7 @@
 # Restart herdr from scratch: quit nvim cleanly (so persistence.nvim saves its
 # sessions), stop the server, relaunch herdr (fresh config + fresh shells), then
 # reopen nvim and claude in every code/agent tab via herdr_restore_panes.sh.
+# If the server is already down, skips straight to relaunch + restore.
 # Must run outside herdr, since stopping the server kills every pane in it.
 # Usage: herdr_restart.sh
 set -uo pipefail
@@ -11,12 +12,26 @@ if [[ -n "${HERDR_ENV:-}" ]]; then
     exit 1
 fi
 
-if ! herdr status server >/dev/null 2>&1; then
-    echo "herdr server not running, starting fresh"
+state_dir="$HOME/.config/herdr"
+
+launch_and_restore() {
+    # The herdr client below owns the terminal, so restore panes from a background
+    # job once the new server is answering and its shells have had time to start.
+    (
+        until herdr pane list >/dev/null 2>&1; do sleep 0.5; done
+        sleep 3
+        herdr_restore_panes.sh
+    ) >"$state_dir/restore.log" 2>&1 &
+
     exec herdr
+}
+
+# Server already down (crash, manual stop): nothing to quit, just relaunch.
+if ! herdr status server >/dev/null 2>&1; then
+    echo "herdr server not running, starting it and restoring panes"
+    launch_and_restore
 fi
 
-state_dir="$HOME/.config/herdr"
 cp "$state_dir/session.json" "$state_dir/session.json.bak-$(date +%Y%m%d-%H%M%S)"
 
 working=$(herdr pane list | jq -r '.result.panes[] | select(.agent_status=="working") | "\(.pane_id) (\(.agent))"')
@@ -70,12 +85,4 @@ fi
 herdr server stop >/dev/null
 while herdr status server >/dev/null 2>&1; do sleep 0.5; done
 
-# The herdr client below owns the terminal, so restore panes from a background
-# job once the new server is answering and its shells have had time to start.
-(
-    until herdr pane list >/dev/null 2>&1; do sleep 0.5; done
-    sleep 3
-    herdr_restore_panes.sh
-) >"$state_dir/restore.log" 2>&1 &
-
-exec herdr
+launch_and_restore
