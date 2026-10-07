@@ -25,12 +25,14 @@ server_running() {
 
 launch_and_restore() {
     # The herdr client below owns the terminal, so restore panes from a background
-    # job once the new server is answering and its shells have had time to start.
+    # job once the new server is answering; --wait lets each shell finish starting.
     (
+        echo "$(date +%T) waiting for server"
         until herdr pane list >/dev/null 2>&1; do sleep 0.5; done
-        sleep 3
-        herdr_restore_panes.sh
-    ) >"$state_dir/restore.log" 2>&1 &
+        echo "$(date +%T) server up, restoring"
+        herdr_restore_panes.sh --wait
+        echo "$(date +%T) done"
+    ) </dev/null >"$state_dir/restore.log" 2>&1 &
 
     exec herdr
 }

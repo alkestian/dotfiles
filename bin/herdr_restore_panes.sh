@@ -3,8 +3,13 @@
 # session, else opening the cwd) in every "code" tab and resume
 # the last claude conversation in every "agent" tab. Only touches panes sitting
 # at an idle shell prompt; agent tabs with no saved conversation are skipped.
-# Usage: herdr_restore_panes.sh
+# --wait: give each pane up to 60s to reach its prompt first, for right after a
+# server start when every shell is still initialising at once.
+# Usage: herdr_restore_panes.sh [--wait]
 set -uo pipefail
+
+wait_secs=0
+[[ "${1:-}" == "--wait" ]] && wait_secs=60
 
 # Load the persistence.nvim session for the cwd (branch-specific first, then
 # branchless, same as persistence.load()), falling back to the cwd itself.
@@ -36,16 +41,28 @@ idle() {
     [[ "$(jq -r '.foreground_processes[].pid' <<<"$info")" == "$(jq -r '.shell_pid' <<<"$info")" ]]
 }
 
+# Idle now, or within wait_secs. Logs busy panes so a skip is never silent.
+wait_idle() {
+    local deadline=$((SECONDS + wait_secs))
+    until idle "$1"; do
+        if ((SECONDS >= deadline)); then
+            echo "busy    $1 $2 (not at a shell prompt, skipped)"
+            return 1
+        fi
+        sleep 1
+    done
+}
+
 herdr pane list | jq -r '.result.panes[] | [.pane_id, .tab_id, .cwd] | @tsv' |
 while IFS=$'\t' read -r pane tab cwd; do
     label=$(jq -r --arg t "$tab" '.[$t] // empty' <<<"$tabs")
     case "$label" in
         code)
-            idle "$pane" || continue
+            wait_idle "$pane" "$cwd" || continue
             herdr pane run "$pane" "$nvim_cmd" >/dev/null && echo "nvim    $pane $cwd"
             ;;
         agent)
-            idle "$pane" || continue
+            wait_idle "$pane" "$cwd" || continue
             # Claude stores conversations per cwd, with / and . replaced by -.
             project_dir="$HOME/.claude/projects/$(sed 's|[/.]|-|g' <<<"$cwd")"
             if ! compgen -G "$project_dir/*.jsonl" >/dev/null; then
