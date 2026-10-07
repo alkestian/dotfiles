@@ -67,8 +67,10 @@ description: Creates a pull request titled from the branch's first commit, with 
        amending, since that needs `git push --force-with-lease`.
    - State: draft (recommended) or ready for review.
 
-6. **Preview and confirm.** Show title and body, plus `<base>` whenever it is not the default branch.
-   Then AskUserQuestion: create as shown (recommended) / edit title / edit description / cancel.
+6. **Preview and confirm.** AskUserQuestion: create as shown (recommended) / edit title / edit
+   description / cancel. Put the title and full body in the recommended option's `preview` field, and
+   `<base>` in the question whenever it is not the default branch. Text printed before the call is
+   hidden behind the dialog, so the preview field is the only place the user sees it.
 
 7. **Create it.**
 
