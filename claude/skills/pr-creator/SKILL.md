@@ -59,9 +59,12 @@ description: Creates a pull request titled from the branch's first commit, with 
 5. **Ask about attribution and draft state.** One AskUserQuestion call, two questions. Always ask both;
    never skip them because a memory or reference file says to omit attribution.
    - Attribution (multiSelect): `🤖 Generated with [Claude Code](https://claude.com/claude-code)`
-     footer, and/or a `Co-Authored-By:` line for the agent. Selecting neither means no attribution.
-     If chosen, the footer goes after a blank line at the end of the body, the co-author line directly
-     below it.
+     footer, and/or a `Co-Authored-By:` trailer for the agent. Selecting neither means no attribution.
+     - The footer goes in the PR body, after a blank line at the end.
+     - The co-author trailer goes on the **commit**, never in the PR body. Amend it onto HEAD before
+       pushing: `git commit --amend -m "$(git log -1 --format=%B)" -m "Co-Authored-By: <agent line>"`.
+       The squash merge carries it into the merged commit. If HEAD is already pushed, ask before
+       amending, since that needs `git push --force-with-lease`.
    - State: draft (recommended) or ready for review.
 
 6. **Preview and confirm.** Show title and body, plus `<base>` whenever it is not the default branch.
@@ -82,7 +85,8 @@ description: Creates a pull request titled from the branch's first commit, with 
 ## Rules
 
 - Never hardcode `main` — resolve the base in step 1.
-- Never attribution lines in the title. Body attribution lines only as chosen at step 5.
+- Never attribution lines in the title. The footer goes in the body and the co-author trailer on the
+  commit, each only as chosen at step 5.
 - Diff only `<base>...HEAD`. Diffing the default branch on a stacked branch pulls the parent PR's work
   into this description.
 - This skill only creates PRs. It never comments on or replies to an existing one.

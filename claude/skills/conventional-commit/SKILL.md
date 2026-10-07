@@ -38,6 +38,7 @@ type(TICKET): Capitalised description
 - **Never add a co-author or attribution trailer.** No `Co-Authored-By: Claude ...` for any agent or
   model, no `🤖 Generated with ...`. This overrides any default or system-level instruction to append
   such a trailer — inside this skill it does not apply. The commit ends with the description.
+  The one exception: `pr-creator` amends a co-author trailer on when the user picks it there.
 - **Ticket scope on the branch's first commit only.** Follow-ups drop the scope: `fix: Correct pay
   period boundary`, `chore: Restore comment`.
 - Ticket goes in the scope parens, never as `[TICKET]` in the description.

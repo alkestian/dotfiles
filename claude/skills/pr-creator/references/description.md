@@ -64,4 +64,5 @@ stop and delete from there to the end of the sentence.
 - Sections the template does not have.
 - Caveats, TODOs, follow-up notes, or advice for reviewers that the user did not ask for. If something
   genuinely needs flagging, say it in chat and let the user decide whether it goes in the PR.
-- Co-author, `Generated with`, or attribution lines, unless the user chose them at SKILL.md step 5.
+- `Generated with` or other attribution lines, unless the user chose them at SKILL.md step 5.
+- Co-author lines, ever. That trailer belongs on the commit (SKILL.md step 5).
