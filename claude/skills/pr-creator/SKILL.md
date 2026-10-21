@@ -57,10 +57,21 @@ description: Creates a pull request titled from the branch's first commit, with 
    - Read `references/description.md` before writing — it owns trimming and length rules.
 
 5. **Preview and confirm — always before any other question.** AskUserQuestion: looks good
-   (recommended) / edit title / edit description / cancel. Put the title and full body in the
+   (recommended) / edit title / edit description / cancel. Put the title and body in the
    recommended option's `preview` field, and `<base>` in the question whenever it is not the default
    branch. Text printed before the call is hidden behind the dialog, so the preview field is the only
    place the user sees it. Loop on edits until the user accepts.
+
+   The preview box has a fixed height and does not scroll: lines past the bottom are silently cut,
+   which hides exactly what the user needs to check. Keep every preview **20 lines or fewer**:
+   - Show only what you wrote. Keep every heading, but collapse each section left exactly as the
+     template wrote it (`How to Test` steps, checklists, boilerplate) to one line:
+     `(unchanged from template)`. Omit HTML comments. The real body still keeps all of it.
+   - Hard-wrap lines at 70 columns. The box sits beside the option list, so long lines wrap and eat
+     height.
+   - Still over 20 lines? Split it: the first 20 lines in the recommended option's preview, the rest
+     in the `edit description` option's preview, headed `(continued)`. Say so in the question text,
+     e.g. "Body continues in the edit description preview."
 
 6. **Ask about attribution and draft state.** Only after the preview is accepted. One AskUserQuestion
    call, two questions. Always ask both; never skip them because a memory or reference file says to
