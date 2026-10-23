@@ -25,7 +25,49 @@ fi
 repo_root=$(git -C "$target" rev-parse --show-toplevel 2>/dev/null) || die "$target is not a git repo"
 repo_name=$(basename "$repo_root")
 
-# One workspace per checkout: focus the existing one rather than open a second.
+# herdr agent names: lowercase letter first, then [a-z0-9_-], max 32 chars.
+agent_name() {
+    local n
+    n=$(tr "[:upper:]" "[:lower:]" <<<"$1" | sed -E "s/[^a-z0-9_-]+/-/g; s/^[^a-z]+//")
+    n="${n:0:32}"
+    echo "${n:-agent}"
+}
+
+idle() {
+    local info
+    info=$(herdr pane process-info --pane "$1" | jq -c '.result.process_info')
+    [[ "$(jq -r '.foreground_processes[].pid' <<<"$info")" == "$(jq -r '.shell_pid' <<<"$info")" ]]
+}
+
+# A fresh tab's shell takes a moment to reach its prompt, and `herdr agent
+# start` refuses a pane that isn't at one. Wait up to 30s.
+wait_for_shell() {
+    for _ in $(seq 60); do
+        idle "$1" && return 0
+        sleep 0.5
+    done
+    return 1
+}
+
+pane_for_tab() {
+    herdr pane list --workspace "$ws_id" | jq -r --arg t "$1" '.result.panes[] | select(.tab_id==$t) | .pane_id' | head -1
+}
+
+tab_by_label() {
+    herdr tab list --workspace "$ws_id" | jq -r --arg l "$1" '.result.tabs[] | select(.label==$l) | .tab_id' | head -1
+}
+
+new_tab() {
+    herdr tab create --workspace "$ws_id" --cwd "$repo_root" --label "$1" --no-focus | jq -r '.result.tab.tab_id'
+}
+
+# Ready for a command: new tabs get time for their shell to start; an existing
+# tab is checked once, so a running nvim or agent is left alone without waiting.
+ready() {
+    if [[ "$2" == new ]]; then wait_for_shell "$1"; else idle "$1"; fi
+}
+
+# Already open somewhere? Fill in its missing tabs, or open another workspace.
 # herdr fills in worktree info lazily, so also match a workspace labelled with
 # the repo name that has a pane sitting in the checkout.
 existing_ws=$(herdr workspace list | jq -r --arg p "$repo_root" \
@@ -37,9 +79,11 @@ if [[ -z "$existing_ws" ]]; then
     done
 fi
 if [[ -n "$existing_ws" ]]; then
-    read -r -p "$repo_name is already open (workspace $existing_ws). Focus it? [y/N] " ans
-    [[ "$ans" =~ ^[Yy]$ ]] && herdr workspace focus "$existing_ws"
-    exit 0
+    read -r -p "$repo_name is already open (workspace $existing_ws). [s]et up its tabs, open [a]nother, or [c]ancel? [S/a/c] " ans
+    case "$ans" in
+        [Aa]) existing_ws="" ;;
+        [Cc]) exit 0 ;;
+    esac
 fi
 
 default_branch=$(git -C "$repo_root" symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's@^origin/@@')
@@ -61,47 +105,53 @@ fi
 
 command -v mise >/dev/null 2>&1 && mise trust "$repo_root" --yes --quiet 2>/dev/null
 
-created=$(herdr workspace create --cwd "$repo_root" --label "$repo_name" --focus) \
-    || die "workspace create failed: $(jq -r '.error.message // .' <<<"$created")"
-ws_id=$(jq -r '.result.workspace.workspace_id' <<<"$created")
-code_tab=$(jq -r '.result.tab.tab_id' <<<"$created")
-code_pane=$(jq -r '.result.root_pane.pane_id' <<<"$created")
+ws_state=new
+if [[ -n "$existing_ws" ]]; then
+    ws_id=$existing_ws
+    ws_state=existing
+    herdr workspace focus "$ws_id" >/dev/null
+else
+    created=$(herdr workspace create --cwd "$repo_root" --label "$repo_name" --focus) \
+        || die "workspace create failed: $(jq -r '.error.message // .' <<<"$created")"
+    ws_id=$(jq -r '.result.workspace.workspace_id' <<<"$created")
+fi
 
-# herdr agent names: lowercase letter first, then [a-z0-9_-], max 32 chars.
-agent_name() {
-    local n
-    n=$(tr "[:upper:]" "[:lower:]" <<<"$1" | sed -E "s/[^a-z0-9_-]+/-/g; s/^[^a-z]+//")
-    n="${n:0:32}"
-    echo "${n:-agent}"
-}
+# code: reuse a lone default tab (a fresh workspace's, or one opened by hand)
+# when it is an idle shell, otherwise add one. Then open the editor if idle.
+code_tab=$(tab_by_label code)
+code_state=existing
+if [[ -z "$code_tab" ]]; then
+    code_state=new
+    tabs=$(herdr tab list --workspace "$ws_id")
+    only=$(jq -r 'if (.result.tabs | length) == 1 then .result.tabs[0] | select(.label | test("^[0-9]+$")) | .tab_id else empty end' <<<"$tabs")
+    if [[ -n "$only" ]] && ready "$(pane_for_tab "$only")" "$ws_state"; then
+        code_tab=$only
+        code_state=$ws_state
+        herdr tab rename "$code_tab" code >/dev/null
+    else
+        code_tab=$(new_tab code)
+    fi
+fi
+code_pane=$(pane_for_tab "$code_tab")
+ready "$code_pane" "$code_state" && herdr pane run "$code_pane" nvim . >/dev/null
 
-# A fresh tab's shell takes a moment to reach its prompt, and `herdr agent
-# start` refuses a pane that isn't at one. Wait up to 30s.
-wait_for_shell() {
-    local info
-    for _ in $(seq 60); do
-        info=$(herdr pane process-info --pane "$1" | jq -c '.result.process_info')
-        [[ "$(jq -r '.foreground_processes[].pid' <<<"$info")" == "$(jq -r '.shell_pid' <<<"$info")" ]] && return 0
-        sleep 0.5
-    done
-    return 1
-}
-
-pane_for_tab() {
-    herdr pane list --workspace "$ws_id" | jq -r --arg t "$1" '.result.panes[] | select(.tab_id==$t) | .pane_id'
-}
-
-# workspace create opens with one default tab; claim it as "code" and open the editor.
-herdr tab rename "$code_tab" code >/dev/null
-herdr pane run "$code_pane" nvim .
-
-# Base-branch workspaces are named after the repo, since "main" clashes across repos.
-agent_tab=$(herdr tab create --workspace "$ws_id" --cwd "$repo_root" --label agent --focus | jq -r '.result.tab.tab_id')
+# agent: named after the repo, since "main" clashes across repos. Agent names
+# are global, so another workspace on the same repo gets "-2", etc.
+agent_tab=$(tab_by_label agent)
+agent_state=existing
+[[ -z "$agent_tab" ]] && { agent_tab=$(new_tab agent); agent_state=new; }
 agent_pane=$(pane_for_tab "$agent_tab")
-wait_for_shell "$agent_pane" || echo "agent tab shell not ready after 30s, trying anyway"
-herdr agent start "$(agent_name "$repo_name")" --kind "$agent_kind" --pane "$agent_pane" >/dev/null </dev/null \
-    || echo "agent start failed in $agent_pane"
+if ready "$agent_pane" "$agent_state"; then
+    started=""
+    for suffix in "" -2 -3 -4 -5; do
+        if herdr agent start "$(agent_name "$repo_name" | cut -c1-29)$suffix" --kind "$agent_kind" --pane "$agent_pane" >/dev/null 2>&1 </dev/null; then
+            started=1
+            break
+        fi
+    done
+    [[ -n "$started" ]] || echo "agent start failed in $agent_pane"
+fi
 
-herdr tab create --workspace "$ws_id" --cwd "$repo_root" --label terminal --no-focus >/dev/null
+[[ -z "$(tab_by_label terminal)" ]] && new_tab terminal >/dev/null
 
 herdr tab focus "$code_tab" >/dev/null
