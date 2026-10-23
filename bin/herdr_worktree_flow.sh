@@ -101,6 +101,18 @@ start_agent() {
         || herdr agent start "$(agent_name "$repo-$name")" --kind "$kind" --pane "$pane" ${1:+-- "$@"} </dev/null
 }
 
+# A fresh tab's shell takes a moment to reach its prompt, and `herdr agent
+# start` refuses a pane that isn't at one. Wait up to 30s.
+wait_for_shell() {
+    local info
+    for _ in $(seq 60); do
+        info=$(herdr pane process-info --pane "$1" | jq -c '.result.process_info')
+        [[ "$(jq -r '.foreground_processes[].pid' <<<"$info")" == "$(jq -r '.shell_pid' <<<"$info")" ]] && return 0
+        sleep 0.5
+    done
+    return 1
+}
+
 pane_for_tab() {
     herdr pane list --workspace "$ws_id" | jq -r --arg t "$1" '.result.panes[] | select(.tab_id==$t) | .pane_id'
 }
@@ -111,7 +123,9 @@ herdr tab rename "$code_tab" code
 herdr pane run "$(pane_for_tab "$code_tab")" nvim .
 
 agent_tab=$(herdr tab create --workspace "$ws_id" --cwd "$wt_path" --label agent --focus | jq -r '.result.tab.tab_id')
-start_agent "$branch" "$(basename "$repo_root")" "$agent_kind" "$(pane_for_tab "$agent_tab")"
+agent_pane=$(pane_for_tab "$agent_tab")
+wait_for_shell "$agent_pane" || echo "agent tab shell not ready after 30s, trying anyway"
+start_agent "$branch" "$(basename "$repo_root")" "$agent_kind" "$agent_pane"
 
 herdr tab create --workspace "$ws_id" --cwd "$wt_path" --label terminal --no-focus >/dev/null
 
