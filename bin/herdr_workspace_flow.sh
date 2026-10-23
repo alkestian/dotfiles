@@ -33,6 +33,22 @@ agent_name() {
     echo "${n:-agent}"
 }
 
+# `herdr agent start` once, retried while the pane is still starting up: a
+# pane can look idle while zsh is still loading, and herdr only accepts it once
+# the prompt is up (agent_pane_busy until then). Gives up after 30s.
+# Prints the last error. Usage: try_start <name> <kind> <pane> [agent-args...]
+try_start() {
+    local name=$1 kind=$2 pane=$3 out
+    shift 3
+    for _ in $(seq 60); do
+        out=$(herdr agent start "$name" --kind "$kind" --pane "$pane" ${1:+-- "$@"} 2>&1 </dev/null) && return 0
+        [[ "$out" == *agent_pane_busy* ]] || break
+        sleep 0.5
+    done
+    echo "$out"
+    return 1
+}
+
 idle() {
     local info
     info=$(herdr pane process-info --pane "$1" | jq -c '.result.process_info')
@@ -142,14 +158,11 @@ agent_state=existing
 [[ -z "$agent_tab" ]] && { agent_tab=$(new_tab agent); agent_state=new; }
 agent_pane=$(pane_for_tab "$agent_tab")
 if ready "$agent_pane" "$agent_state"; then
-    started=""
     for suffix in "" -2 -3 -4 -5; do
-        if herdr agent start "$(agent_name "$repo_name" | cut -c1-29)$suffix" --kind "$agent_kind" --pane "$agent_pane" >/dev/null 2>&1 </dev/null; then
-            started=1
-            break
-        fi
+        err=$(try_start "$(agent_name "$repo_name" | cut -c1-29)$suffix" "$agent_kind" "$agent_pane") && break
+        [[ "$err" == *agent_name_taken* ]] || break
     done
-    [[ -n "$started" ]] || echo "agent start failed in $agent_pane"
+    [[ -n "$err" ]] && echo "agent start failed in $agent_pane: $(jq -r '.error.message // .' <<<"$err" 2>/dev/null || echo "$err")"
 fi
 
 [[ -z "$(tab_by_label terminal)" ]] && new_tab terminal >/dev/null
