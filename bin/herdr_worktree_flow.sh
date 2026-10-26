@@ -65,11 +65,26 @@ fi
 
 args=(--branch "$branch" --cwd "$repo_root" --label "$branch" --focus)
 
-# Pulling the base down to date before cutting the new branch: skip this when
-# reusing an existing branch above (nothing new is being cut from a base there).
+# Bring the base up to date: fetch it, then fast-forward the local branch too,
+# since the main checkout normally sits on it and would otherwise go stale.
+# --ff-only refuses rather than merging if local work has diverged.
+base_name="${base:-$default_branch}"
+fetched=""
+if git -C "$repo_root" fetch --quiet origin "$base_name" 2>/dev/null; then
+    fetched=1
+    if [[ "$(git -C "$repo_root" branch --show-current)" == "$base_name" ]]; then
+        git -C "$repo_root" merge --ff-only --quiet "origin/$base_name" 2>/dev/null \
+            || echo "could not fast-forward local $base_name (diverged or local changes), leaving it as-is"
+    else
+        git -C "$repo_root" fetch --quiet origin "$base_name:$base_name" 2>/dev/null \
+            || echo "could not fast-forward local $base_name (diverged or checked out elsewhere), leaving it as-is"
+    fi
+fi
+
+# Cut the new branch from the fresh base; skip when reusing an existing branch
+# above (nothing new is being cut from a base there).
 if [[ "$branch" != "$reuse" ]]; then
-    base_name="${base:-$default_branch}"
-    if git -C "$repo_root" fetch origin "$base_name" 2>/dev/null; then
+    if [[ -n "$fetched" ]]; then
         args+=(--base "origin/$base_name")
     else
         echo "could not fetch origin/$base_name, branching off local $base_name instead"
