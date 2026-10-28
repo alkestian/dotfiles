@@ -47,3 +47,39 @@ gh stack link <parent-PR> <new-PR>
   PRs are never removed.
 - It keeps each PR's base and draft state.
 - Confirm with `gh stack view --short` and report "stack #N". Undo with `gh stack unstack`.
+
+## Stack tracker
+
+The team's PR summary bot lists titles only. Stacked PRs share a ticket id, so a position suffix is
+the only way a reader can tell the order to review them in. Offered at step 6 when the PR is part of
+a stack, which is any of:
+
+- `<base>` is a stack parent.
+- The user said it is stacked (e.g. "stack", "1 of 3", "first of the stack").
+- It is the bottom of a stack: child branches descend from HEAD and are not merged into the default
+  branch. Detect them with:
+
+  ```bash
+  git for-each-ref --format='%(refname:short)' refs/heads \
+    | while read -r ref; do
+        [ "$ref" = "$current" ] && continue
+        git merge-base --is-ancestor "$ref" "$default" 2>/dev/null && continue
+        git merge-base --is-ancestor HEAD "$ref" 2>/dev/null && echo "$ref"
+      done
+  ```
+
+  Descendants that are not in one chain (siblings) are not a stack. Count only the longest chain.
+
+- Format: suffix, `type(TICKET): Description (2/3)`. Suffix keeps the conventional-commit prefix
+  parseable. Do not touch the commit subject; edit the PR title only.
+- Position = number of PRs from the bottom of the stack to the new PR, inclusive. Count by walking
+  `gh pr list --head <base> --state open --json baseRefName` down until the base is the default
+  branch. The bottom PR is `1`.
+- Total = the user's planned size if they give one (via "Other"), else the length of the chain of
+  child branches above plus this PR, else the current depth, so the top PR reads `(2/2)`.
+- The question comes after the step 5 preview, so the preview title has no tracker. Apply the suffix
+  to `--title` in step 7 and state the final title when reporting the URL.
+- Squash merge uses the PR title, so the suffix lands in the merged commit. Tell the user to strip it
+  at merge.
+- Never retitle other PRs in the stack on your own. If the total changed, say which PRs now have a
+  stale count and offer to run `gh pr edit --title` on them.

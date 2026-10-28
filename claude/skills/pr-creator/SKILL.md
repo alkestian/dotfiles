@@ -33,6 +33,9 @@ description: Creates a pull request titled from the branch's first commit, with 
    - No output → base is `$default` (may be `master`, not `main`).
    - Output → possible stack. Read `references/stacked-base.md`.
 
+   Also check whether this is the **bottom** of a stack: the user said so (e.g. "stack", "1 of 3"), or
+   child branches exist. Read the "Stack tracker" section of `references/stacked-base.md` for the check.
+
    Use the result as `<base>` everywhere below.
 
 2. **Read the change.** `git log <base>..HEAD --oneline` and `git diff <base>...HEAD`.
@@ -74,7 +77,7 @@ description: Creates a pull request titled from the branch's first commit, with 
      e.g. "Body continues in the edit description preview."
 
 6. **Ask about attribution and draft state.** Only after the preview is accepted. One AskUserQuestion
-   call, two questions. Always ask both; never skip them because a memory or reference file says to
+   call, two questions (three when the PR is part of a stack, see below). Always ask them all; never skip them because a memory or reference file says to
    omit attribution.
    - Attribution (multiSelect): `🤖 Generated with [Claude Code](https://claude.com/claude-code)`
      footer, and/or a `Co-Authored-By:` trailer for the agent. Selecting neither means no attribution.
@@ -84,6 +87,8 @@ description: Creates a pull request titled from the branch's first commit, with 
        The squash merge carries it into the merged commit. If HEAD is already pushed, ask before
        amending, since that needs `git push --force-with-lease`.
    - State: draft (recommended) or ready for review.
+   - Stacked only (stack parent, stack bottom, or the user said stacked): stack tracker in the title?
+     yes (recommended) / no. Apply it to the title before step 7.
 
 7. **Create it.**
 
