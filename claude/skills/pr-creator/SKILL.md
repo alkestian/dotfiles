@@ -97,6 +97,10 @@ description: Creates a pull request titled from the branch's first commit, with 
 
    Pass `--draft` only if the user chose draft at step 6. Return the URL, and name the base if it is not the default.
 
+8. **Stacked base → link the GitHub stack.** A base branch alone does not stack PRs. If `<base>` is a
+   stack parent, link the new PR into a GitHub stack as described in `references/stacked-base.md`
+   ("Link the stack"), and report the stack number.
+
 ## Rules
 
 - Never hardcode `main` — resolve the base in step 1.

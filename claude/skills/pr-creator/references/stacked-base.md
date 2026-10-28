@@ -30,3 +30,20 @@ The base decides two things at once: what GitHub shows as the diff, and what you
 body. Get it wrong on a stacked branch and the PR claims credit for its parent's changes, and the
 review is unreadable. It is also awkward to fix after the fact — changing the base of an open PR
 rewrites the conversation's diff and can invalidate approvals.
+
+## Link the stack
+
+Setting `--base` to the parent's branch only bases one PR on another. A stacked PR means GitHub's
+native stack, made with the `gh stack` extension (`gh extension list` shows `github/gh-stack`). If it
+is missing, say so and stop; do not report the PRs as stacked.
+
+After `gh pr create`, link bottom to top, starting from the PR nearest the default branch:
+
+```bash
+gh stack link <parent-PR> <new-PR>
+```
+
+- If the parent is already in a stack, `gh stack link` adds the new PR to the top of it; existing
+  PRs are never removed.
+- It keeps each PR's base and draft state.
+- Confirm with `gh stack view --short` and report "stack #N". Undo with `gh stack unstack`.
