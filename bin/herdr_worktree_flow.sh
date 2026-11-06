@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Create a git worktree and open it in herdr with 3 tabs: code, agent, terminal.
-# Usage: herdr_worktree_flow.sh <branch> [base-ref] [agent-kind]
+# Usage: herdr_worktree_flow.sh [--prompt <text>] <branch> [base-ref] [agent-kind]
+# --prompt is passed to the agent as its first message.
 set -uo pipefail
 
 die() {
@@ -9,11 +10,23 @@ die() {
     exit 1
 }
 
+prompt=""
+positional=()
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --prompt) prompt="${2:-}"; shift 2 ;;
+        *) positional+=("$1"); shift ;;
+    esac
+done
+set -- "${positional[@]+"${positional[@]}"}"
+
 branch="${1:-}"
 base="${2:-}"
 agent_kind="${3:-claude}"
 
-repo_root=$(git rev-parse --show-toplevel)
+# Resolve the main checkout even when run from a linked worktree; herdr only
+# creates worktrees from the repo's parent workspace.
+repo_root=$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")
 current=$(git -C "$repo_root" branch --show-current)
 default_branch=$(git -C "$repo_root" symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's@^origin/@@')
 default_branch="${default_branch:-main}"
@@ -160,7 +173,7 @@ herdr pane run "$(pane_for_tab "$code_tab")" nvim .
 agent_tab=$(herdr tab create --workspace "$ws_id" --cwd "$wt_path" --label agent --focus | jq -r '.result.tab.tab_id')
 agent_pane=$(pane_for_tab "$agent_tab")
 wait_for_shell "$agent_pane" || echo "agent tab shell not ready after 30s, trying anyway"
-start_agent "$branch" "$(basename "$repo_root")" "$agent_kind" "$agent_pane"
+start_agent "$branch" "$(basename "$repo_root")" "$agent_kind" "$agent_pane" ${prompt:+"$prompt"}
 
 herdr tab create --workspace "$ws_id" --cwd "$wt_path" --label terminal --no-focus >/dev/null
 
