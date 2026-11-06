@@ -177,4 +177,7 @@ start_agent "$branch" "$(basename "$repo_root")" "$agent_kind" "$agent_pane" ${p
 
 herdr tab create --workspace "$ws_id" --cwd "$wt_path" --label terminal --no-focus >/dev/null
 
-herdr tab focus "$code_tab" >/dev/null
+# With a prompt the agent is already working, so land on its tab instead.
+focus_tab="$code_tab"
+[[ -n "$prompt" ]] && focus_tab="$agent_tab"
+herdr tab focus "$focus_tab" >/dev/null
