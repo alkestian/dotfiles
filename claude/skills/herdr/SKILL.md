@@ -22,10 +22,12 @@ stdin is not a TTY, so any y/N prompt falls back to N (cancel). Report that rath
    the script resolves the main checkout itself.
 2. **Branch.** Pass the bare key (`LEDGR-6873`); the script adds `cb/`.
 3. **Prompt (optional).** The text becomes the new agent's first message.
-   - If the `ledger:ticket` skill is available in this session and the key is a LEDGR ticket, pass
-     `--prompt "Use the ledger:ticket skill to fetch <KEY>, then plan the change. Do not edit yet."`
-   - Otherwise pass whatever context the user gave (a ticket summary, a task description), or omit
-     `--prompt` for an empty agent. Never assume `/ledger` exists.
+   - If the user gave a ticket key, pass
+     `--prompt "Use the plan-ticket skill on <KEY>. Do not edit yet."`
+     It fetches the ticket itself and sets the Opus/Sonnet/Haiku split. Append any scope the user
+     gave, e.g. "Your part: dp-protos only."
+   - Otherwise pass whatever context the user gave (a task description), or omit `--prompt` for an
+     empty agent.
 4. **Verify** after it returns:
    `herdr worktree list --cwd ~/repos/<repo> | jq -r '.result.worktrees[] | select(.branch=="cb/<KEY>")'`
    shows the path and an `open_workspace_id`. Report path, branch and workspace ID.
