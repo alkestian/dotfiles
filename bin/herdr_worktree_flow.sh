@@ -42,7 +42,19 @@ if [[ -z "$branch" ]]; then
     [[ -z "$branch" ]] && { echo "no branch given, aborting"; exit 1; }
 fi
 
-[[ "$branch" != cb/* ]] && branch="cb/$branch"
+# A branch that already exists on origin under exactly this name (and isn't one
+# of ours) is someone else's: use it verbatim, base the worktree on it, and
+# block bare pushes to it. Anything else gets the cb/ prefix.
+foreign=""
+if [[ "$branch" != cb/* ]]; then
+    if git -C "$repo_root" fetch --quiet origin "$branch" 2>/dev/null \
+        && git -C "$repo_root" rev-parse --verify --quiet "refs/remotes/origin/$branch" >/dev/null; then
+        foreign=1
+        echo "$branch exists on origin: checking it out as-is, pushes blocked"
+    else
+        branch="cb/$branch"
+    fi
+fi
 
 # Reusing the branch checked out in the main repo (e.g. from the jira-branch
 # skill): free it up in the main checkout first so `git worktree add` doesn't
@@ -97,7 +109,15 @@ fi
 # Cut the new branch from the fresh base; skip when reusing an existing branch
 # above (nothing new is being cut from a base there).
 if [[ "$branch" != "$reuse" ]]; then
-    if [[ -n "$fetched" ]]; then
+    if [[ -n "$foreign" ]]; then
+        if git -C "$repo_root" show-ref --verify --quiet "refs/heads/$branch"; then
+            # Stale local copy from an earlier look: bring it up to date, keep it as the branch.
+            git -C "$repo_root" fetch --quiet origin "$branch:$branch" 2>/dev/null \
+                || echo "could not fast-forward local $branch (local commits?), leaving it as-is"
+        else
+            args+=(--base "origin/$branch")
+        fi
+    elif [[ -n "$fetched" ]]; then
         args+=(--base "origin/$base_name")
     else
         echo "could not fetch origin/$base_name, branching off local $base_name instead"
@@ -108,6 +128,14 @@ fi
 created=$(herdr worktree create "${args[@]}") || die "worktree create failed: $(jq -r '.error.message // .' <<<"$created")"
 ws_id=$(jq -r '.result.workspace.workspace_id' <<<"$created")
 wt_path=$(jq -r '.result.worktree.path' <<<"$created")
+
+# Someone else's branch: pull from it, but make a bare `git push` fail. The key
+# is per-branch, so it doesn't touch other branches or worktrees. It is removed
+# with the branch when herdr_worktree_close.sh runs `git branch -D`.
+if [[ -n "$foreign" ]]; then
+    git -C "$wt_path" branch --quiet --set-upstream-to="origin/$branch" "$branch"
+    git -C "$wt_path" config "branch.$branch.pushRemote" no_push
+fi
 
 command -v mise >/dev/null 2>&1 && mise trust "$wt_path" --yes --quiet 2>/dev/null
 
