@@ -16,6 +16,7 @@ herdr/config.toml:$HOME/.config/herdr/config.toml
 claude/skills/conventional-commit:$HOME/.claude/skills/conventional-commit
 claude/skills/pr-creator:$HOME/.claude/skills/pr-creator
 claude/skills/herdr:$HOME/.claude/skills/herdr
+claude/skills/pr-message:$HOME/.claude/skills/pr-message
 "
 
 link_one() {

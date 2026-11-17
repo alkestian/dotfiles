@@ -62,6 +62,9 @@ stop and delete from there to the end of the sentence.
 ## Do not add
 
 - Sections the template does not have.
+- Mentions of mechanical changes the diff makes obvious: dependency or version bumps (e.g. "dp-protos
+  bumped to v1.338.1"), regenerated code, lockfile updates, renamed imports. Describe the behaviour,
+  not the plumbing.
 - Caveats, TODOs, follow-up notes, or advice for reviewers that the user did not ask for. If something
   genuinely needs flagging, say it in chat and let the user decide whether it goes in the PR.
 - `Generated with` or other attribution lines, unless the user chose them at SKILL.md step 6.
